@@ -133,7 +133,7 @@ def intensity_based_registration_demo(I, Im, use_varying_lr=True, use_t2=True, u
         display(fig)
 
     optimum = max(similarity)
-    if use_nnc:
+    if use_ncc:
         print(f"The optimum Normalized Cross-Correlation of this registration is: {optimum}")
     else:
         print(f"The optimum Mutual Information of this registration is: {optimum}")
