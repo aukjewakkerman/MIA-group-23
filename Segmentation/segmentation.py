@@ -242,7 +242,7 @@ def nn_classifier(train_data, train_labels, test_data):
     # Input:
     # train_data - num_train x p matrix with features for the training data
     # train_labels - num_train x 1 vector with labels for the training data
-    # test_labels - num_test x p matrix with features for the test data
+    # test_data - num_test x p matrix with features for the test data
     # Output:
     # predicted_labels - num_test x 1 predicted vector with labels for
     #                    the test data
