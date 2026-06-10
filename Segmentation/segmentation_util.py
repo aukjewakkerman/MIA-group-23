@@ -1,3 +1,5 @@
+from wsgiref import headers
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -319,8 +321,25 @@ def confusion_matrix(true_labels, predicted_labels):
     p = predicted_labels.flatten()
 
     all_classes, indices1, indices2 = np.unique(true_labels, return_index=True, return_inverse=True)
+    classes = np.unique(Y_test)
+    print(classes)
+    class_names = ['Background', 'CSF', 'GM', 'WM']
 
     conf_matrix = np.zeros((len(all_classes), len(all_classes)), dtype=int)
+    plt.figure(figsize=(6,6))
+    plt.imshow(confusion_matrix_knn, cmap='viridis')
+    plt.colorbar()
+
+    plt.xticks(ticks=range(len(class_names)), labels=class_names, rotation=45)
+    plt.yticks(ticks=range(len(class_names)), labels=class_names)
+
+    plt.xlabel("Predicted label")
+    plt.ylabel("True label")
+    plt.title("Confusion Matrix (kNN)")
+
+    plt.tight_layout()
+    plt.show()
+
 
     for i in range(len(t)):
         true_class = t[i]
