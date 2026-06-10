@@ -284,7 +284,7 @@ def knn_classifier(train_data, train_labels, test_data, k):
 # SECTION 2. Generalization and overfitting
 
 
-def mypca(X, feature_labels=None, threshold=0.3, visualize=False):
+def mypca(X, feature_labels=None, threshold=0.3, visualize=True):
     # Rotates the data X such that the dimensions of rotated data Xpca
     # are uncorrelated and sorted by variance.
     # Input:
