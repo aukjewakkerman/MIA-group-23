@@ -273,7 +273,11 @@ def dice_multiclass(true_labels, predicted_labels):
         temp_predicted[predicted_labels == all_classes[i]] = 1
         temp_predicted[predicted_labels != all_classes[i]] = 0
         dice_score[i] = dice_overlap(temp_true.astype(int), temp_predicted.astype(int))
-        print("class {}, dice_score[i]".format(all_classes[i], dice_score[i]))
+
+    print("Dice score for class 0: {}".format(dice_score[0])
+        + "\nDice score for class 1: {}".format(dice_score[1])
+        + "\nDice score for class 2: {}".format(dice_score[2])
+        + "\nDice score for class 3 (CSF): {}".format(dice_score[3]))
 
     dice_score_mean = dice_score.mean()
 
