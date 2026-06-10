@@ -1,5 +1,3 @@
-from wsgiref import headers
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -275,6 +273,7 @@ def dice_multiclass(true_labels, predicted_labels):
         temp_predicted[predicted_labels == all_classes[i]] = 1
         temp_predicted[predicted_labels != all_classes[i]] = 0
         dice_score[i] = dice_overlap(temp_true.astype(int), temp_predicted.astype(int))
+        print("class {}, dice_score[i]".format(all_classes[i], dice_score[i]))
 
     dice_score_mean = dice_score.mean()
 
@@ -292,9 +291,6 @@ def classification_error(true_labels, predicted_labels):
     # Output:
     # error         Classification error
 
-
-    print(true_labels.shape, predicted_labels.shape)
-    
     assert true_labels.shape[0] == predicted_labels.shape[0], "Number of labels do not match"
 
     t = true_labels.flatten()
@@ -337,4 +333,3 @@ def confusion_matrix(true_labels, predicted_labels):
     conf_matrix = pd.DataFrame(conf_matrix, index=[f"True {name}" for name in class_names], columns=[f"Pred {name}" for name in class_names])
 
     return conf_matrix
-
