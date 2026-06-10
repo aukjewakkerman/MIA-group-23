@@ -319,6 +319,7 @@ def confusion_matrix(true_labels, predicted_labels):
 
     t = true_labels.flatten()
     p = predicted_labels.flatten()
+    print("test")
 
     all_classes, indices1, indices2 = np.unique(true_labels, return_index=True, return_inverse=True)
     classes = np.unique(Y_test)
