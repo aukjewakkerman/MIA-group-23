@@ -333,25 +333,5 @@ def confusion_matrix(true_labels, predicted_labels):
 
     conf_matrix = pd.DataFrame(conf_matrix, index=[f"True {name}" for name in class_names], columns=[f"Pred {name}" for name in class_names])
 
-    
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.axis('off')
-
-    table = ax.table(
-        cellText=conf_df.values,
-        rowLabels=conf_df.index,
-        colLabels=conf_df.columns,
-        loc='center'
-    )
-
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    table.scale(1, 1.5)
-
-    ax.set_title("Confusion Matrix (kNN)", pad=20)
-
-    plt.show()
-
-
     return conf_matrix
 
