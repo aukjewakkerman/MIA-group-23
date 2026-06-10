@@ -292,6 +292,9 @@ def classification_error(true_labels, predicted_labels):
     # Output:
     # error         Classification error
 
+
+    print(true_labels.shape, predicted_labels.shape)
+    
     assert true_labels.shape[0] == predicted_labels.shape[0], "Number of labels do not match"
 
     t = true_labels.flatten()
