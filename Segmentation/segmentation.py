@@ -403,7 +403,7 @@ def segmentation_atlas(train_data, train_labels, test_data):
     # want to first do registration on the image intensity
 
     #Assume predicted labels are the atlas labels
-    predicted_labels = train_labels
+    predicted_labels = train_labels.flatten()
 
     return predicted_labels
 

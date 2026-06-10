@@ -74,8 +74,8 @@ def segmentation_demo(methods='none'):
     test_data, test_labels, test_feature_labels = util.create_dataset(test_subject,test_slice,task, methods)
 
     predicted_labels = seg.segmentation_atlas(None, train_labels, None)
-   
-    #err = util.classification_error(test_labels, predicted_labels)
+
+    err = util.classification_error(test_labels, predicted_labels)
     dice = util.dice_overlap(test_labels, predicted_labels)
 
     #Display results
