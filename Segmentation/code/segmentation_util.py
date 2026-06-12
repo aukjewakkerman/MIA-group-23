@@ -300,6 +300,31 @@ def classification_error(true_labels, predicted_labels):
     
     return err
 
+def confusion_matrix(true_labels, predicted_labels):
+    import pandas as pd
+    # confusion_matrix.m returns the confusion matrix for two vectors with labels
+    #
+    # Input:
+    # true_labels         Nx1 vector with the true labels
+    # predicted_labels    Nx1 vector with the predicted labels
+    #
+    # Output:
+    # conf_matrix        CxC confusion matrix, where C is the number of classes
+    assert true_labels.shape[0] == predicted_labels.shape[0], "Number of labels do not match"
+    t = true_labels.flatten()
+    p = predicted_labels.flatten()
+    all_classes, indices1, indices2 = np.unique(true_labels, return_index=True, return_inverse=True)
+    class_names = ['Background', 'CSF', 'GM', 'WM'] #still needs to be generalized for more classes
+    conf_matrix = np.zeros((len(all_classes), len(all_classes)), dtype=int)
+    for i in range(len(t)):
+        true_class = t[i]
+        pred_class = p[i]
+        conf_matrix[true_class, pred_class] += 1
+    conf_matrix = pd.DataFrame(conf_matrix, index=[f"True {name}" for name in class_names], columns=[f"Pred {name}" for name in class_names])
+    
+    return conf_matrix
+
+
 
 
 

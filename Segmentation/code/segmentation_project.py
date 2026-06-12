@@ -187,13 +187,13 @@ def segmentation_demo():
         ax1.imshow(test_shape_1, 'gray')
         ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax1.set_title(f'Subject {sub}: T1-Only Baseline')
-        ax1.set_xlabel(f'Err {err_t1:.4f}, Dice {dice_t1:.4f}')
+        ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
 
         # Plot T1 + T2 Results
         ax2 = fig.add_subplot(122)
         ax2.imshow(test_shape_1, 'gray')
         ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax2.set_title(f'Subject {sub}: T1+T2 Proposed')
-        ax2.set_xlabel(f'Err {err_t1t2:.4f}, Dice {dice_t1t2:.4f}')
+        ax2.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
         
         plt.show()
