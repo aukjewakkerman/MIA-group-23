@@ -321,6 +321,7 @@ def confusion_matrix(true_labels, predicted_labels):
         pred_class = p[i]
         conf_matrix[true_class, pred_class] += 1
     conf_matrix = pd.DataFrame(conf_matrix, index=[f"True {name}" for name in class_names], columns=[f"Pred {name}" for name in class_names])
+    print("Confusion Matrix:\n", conf_matrix)
     
     return conf_matrix
 
