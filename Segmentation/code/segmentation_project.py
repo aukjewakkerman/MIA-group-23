@@ -168,6 +168,8 @@ def segmentation_demo():
         predicted_labels_t1 = segmentation_mymethod(train_data_t1, all_labels_matrix[:, train_subjects], test_data_t1, task)
         err_t1 = util.classification_error(test_labels, predicted_labels_t1)
         dice_t1 = util.dice_multiclass(test_labels, predicted_labels_t1)
+        conf_matrix_t1 = util.confusion_matrix(test_labels, predicted_labels_t1)
+        print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1}")
 
         # --- T1 + T2 ---
         train_data_t1t2 = all_data_t1t2_matrix[:, :, train_subjects]
@@ -177,6 +179,8 @@ def segmentation_demo():
         predicted_labels_t1t2 = segmentation_mymethod(train_data_t1t2, all_labels_matrix[:, train_subjects], test_data_t1t2, task)
         err_t1t2 = util.classification_error(test_labels, predicted_labels_t1t2)
         dice_t1t2 = util.dice_multiclass(test_labels, predicted_labels_t1t2)
+        conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
+        print(f"Confusion Matrix for T1+T2:\n{conf_matrix_t1t2}")
 
         # --- Visualization ---
         fig = plt.figure(figsize=(12, 5))
