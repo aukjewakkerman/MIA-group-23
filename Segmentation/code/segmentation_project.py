@@ -174,6 +174,8 @@ def segmentation_demo():
         predicted_labels_t1 = segmentation_mymethod(train_data_t1, all_labels_matrix[:, train_subjects], test_data_t1, task)
         err_t1 = util.classification_error(test_labels, predicted_labels_t1)
         dice_t1 = util.dice_multiclass(test_labels, predicted_labels_t1)
+        conf_matrix_t1 = util.confusion_matrix(test_labels, predicted_labels_t1)
+        print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1}")
 
         # --- T1 + T2 ---
         train_data_t1t2 = all_data_t1t2_matrix[:, :, train_subjects]
@@ -183,6 +185,8 @@ def segmentation_demo():
         predicted_labels_t1t2 = segmentation_mymethod(train_data_t1t2, all_labels_matrix[:, train_subjects], test_data_t1t2, task)
         err_t1t2 = util.classification_error(test_labels, predicted_labels_t1t2)
         dice_t1t2 = util.dice_multiclass(test_labels, predicted_labels_t1t2)
+        conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
+        print(f"Confusion Matrix for T1+T2:\n{conf_matrix_t1t2}")
 
         # --- Visualization ---
         fig = plt.figure(figsize=(12, 5))
@@ -193,14 +197,14 @@ def segmentation_demo():
         ax1.imshow(test_shape_1, 'gray')
         ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax1.set_title(f'Subject {sub}: T1-Only Baseline')
-        ax1.set_xlabel(f'Err {err_t1:.4f}, Dice {dice_t1:.4f}')
+        ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
 
         # Plot T1 + T2 Results
         ax2 = fig.add_subplot(242)
         ax2.imshow(test_shape_1, 'gray')
         ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax2.set_title(f'Subject {sub}: T1+T2 Proposed')
-        ax2.set_xlabel(f'Err {err_t1t2:.4f}, Dice {dice_t1t2:.4f}')
+        ax2.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score{dice_t1t2:.4f}')
 
         ax3 = fig.add_subplot(243)
         ax3.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=1)
