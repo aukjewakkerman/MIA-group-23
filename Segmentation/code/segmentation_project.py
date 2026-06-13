@@ -124,7 +124,7 @@ def segmentation_mymethod(train_data_matrix, train_labels_matrix, test_data, tas
 def segmentation_demo():
     num_images = 5
     im_size = [240, 240]
-    train_slice = 1
+    train_slices = [1,2,3]
     task = 'tissue'  
 
     all_subjects = np.arange(num_images)
@@ -136,21 +136,27 @@ def segmentation_demo():
     print(f'Loading data for {num_images} subjects...')
     for i in all_subjects:
         sub = i + 1
-        # Load T1-only
-        X_t1, Y, _ = util.create_dataset(sub, train_slice, task, use_t2=False)
-        all_data_t1.append(X_t1)
-        
-        # Load T2 + T1
-        X_both, _, _ = util.create_dataset(sub, train_slice, task, use_t2=True)
-        all_data_t1t2.append(X_both)
-        
-        all_labels.append(Y.flatten())
+        print(f"Subject {sub}...")
+
+        for j in train_slices:
+            slice = j
+            print(f"Slice {slice}...")
+            # Load T1-only
+            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False)
+            all_data_t1.append(X_t1)
+            
+            # Load T2 + T1
+            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True)
+            all_data_t1t2.append(X_both)
+            
+            all_labels.append(Y.flatten())
 
     all_data_t1_matrix = np.dstack(all_data_t1)
     all_data_t1t2_matrix = np.dstack(all_data_t1t2)
     all_labels_matrix = np.column_stack(all_labels)
 
     print('Finished loading data.\nStarting cross-validation...')
+    print(f"Data shapes - T1: {all_data_t1_matrix.shape}, T1+T2: {all_data_t1t2_matrix.shape}, Labels: {all_labels_matrix.shape}")
 
     # Leave-One-Subject-Out Cross-Validation
     for i in np.arange(num_images):
@@ -183,17 +189,25 @@ def segmentation_demo():
         test_shape_1 = test_labels.reshape(im_size[0], im_size[1])
         
         # Plot T1 Results
-        ax1 = fig.add_subplot(121)
+        ax1 = fig.add_subplot(241)
         ax1.imshow(test_shape_1, 'gray')
         ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax1.set_title(f'Subject {sub}: T1-Only Baseline')
         ax1.set_xlabel(f'Err {err_t1:.4f}, Dice {dice_t1:.4f}')
 
         # Plot T1 + T2 Results
-        ax2 = fig.add_subplot(122)
+        ax2 = fig.add_subplot(242)
         ax2.imshow(test_shape_1, 'gray')
         ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax2.set_title(f'Subject {sub}: T1+T2 Proposed')
         ax2.set_xlabel(f'Err {err_t1t2:.4f}, Dice {dice_t1t2:.4f}')
+
+        ax3 = fig.add_subplot(243)
+        ax3.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=1)
+        ax3.set_title(f'Subject {sub}: T1+T2 Proposed (No Ground Truth)')
+
+        ax4 = fig.add_subplot(244)
+        ax4.imshow(test_shape_1, 'viridis', alpha=1)
+        ax4.set_title(f'Subject {sub}: Ground Truth (No Prediction)')
         
         plt.show()
