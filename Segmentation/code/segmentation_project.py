@@ -154,21 +154,32 @@ def segmentation_demo():
     all_data_t1t2_matrix = np.dstack(all_data_t1t2)
     all_labels_matrix = np.column_stack(all_labels)
 
+    # Reshape data so patients and slices are sepperate
+    #all_data_t1_matrix = all_data_t1_matrix.reshape(57600, 9, num_subjects, len(train_slices))
+    #all_data_t1t2_matrix = all_data_t1t2_matrix.reshape(57600, 19, num_subjects, len(train_slices))
+    #all_labels_matrix = all_labels_matrix.reshape(57600, num_subjects, len(train_slices))
+
     print('Finished loading data.')
     print(f"\tData shapes - T1: {all_data_t1_matrix.shape}, T1+T2: {all_data_t1t2_matrix.shape}, Labels: {all_labels_matrix.shape}")
     print('\nStarting cross-validation...')
-    
+
+    all_slices = np.arange(15)
 
     # Leave-One-Subject-Out Cross-Validation
-    for i in np.arange(num_subjects):
+    #for i in np.arange(num_subjects):
+    for i in all_slices:
+        print(i)
         sub = i + 1
         
         # Define training subjects (all except the current test subject 'i')
-        train_subjects = np.delete(all_subjects, i)
+        #train_subjects = np.delete(all_subjects, i)
+        train_subjects = np.delete(all_slices, i)
 
         # --- T1 ---
         train_data_t1 = all_data_t1_matrix[:, :, train_subjects]
+        print('shape train_data_t1', train_data_t1.shape)
         test_data_t1 = all_data_t1_matrix[:, :, i]
+        print('shape test_data_t1t2', test_data_t1.shape)
         test_labels = all_labels_matrix[:, i]
         
         print(f"Training Subject {sub} on T1-only...")
@@ -195,14 +206,14 @@ def segmentation_demo():
         
         # Plot Slice 1 results
         # Plot T1 Results
-        ax1 = fig.add_subplot(321)
+        ax1 = fig.add_subplot(121)
         ax1.imshow(test_shape_1, 'gray')
         ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax1.set_title(f'Subject {sub}: T1-Only Baseline')
         ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
 
         # Plot T1 + T2 Results
-        ax2 = fig.add_subplot(322)
+        ax2 = fig.add_subplot(122)
         ax2.imshow(test_shape_1, 'gray')
         ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
         ax2.set_title(f'Subject {sub}: T1+T2 Proposed')
@@ -210,33 +221,33 @@ def segmentation_demo():
 
         # Plot Slice 2 results
         # Plot T1 Results
-        ax3 = fig.add_subplot(323)
-        ax3.imshow(test_shape_1, 'gray')
-        ax3.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        ax3.set_title(f'Subject {sub}: T1-Only Baseline')
-        ax3.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
+        #ax3 = fig.add_subplot(323)
+        #ax3.imshow(test_shape_1, 'gray')
+        #ax3.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
+        #ax3.set_title(f'Subject {sub}: T1-Only Baseline')
+        #ax3.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
 
         # Plot T1 + T2 Results
-        ax4 = fig.add_subplot(324)
-        ax4.imshow(test_shape_1, 'gray')
-        ax4.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        ax4.set_title(f'Subject {sub}: T1+T2 Proposed')
-        ax4.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
+        #ax4 = fig.add_subplot(324)
+        #ax4.imshow(test_shape_1, 'gray')
+        #ax4.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
+        #ax4.set_title(f'Subject {sub}: T1+T2 Proposed')
+        #ax4.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
         
         # Plot Slice 3 results
         # Plot T1 Results
-        ax5 = fig.add_subplot(325)
-        ax5.imshow(test_shape_1, 'gray')
-        ax5.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        ax5.set_title(f'Subject {sub}: T1-Only Baseline')
-        ax5.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
+        #ax5 = fig.add_subplot(325)
+        #ax5.imshow(test_shape_1, 'gray')
+        #ax5.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
+        #ax5.set_title(f'Subject {sub}: T1-Only Baseline')
+        #ax5.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
 
         # Plot T1 + T2 Results
-        ax6 = fig.add_subplot(326)
-        ax6.imshow(test_shape_1, 'gray')
-        ax6.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        ax6.set_title(f'Subject {sub}: T1+T2 Proposed')
-        ax6.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
+        #ax6 = fig.add_subplot(326)
+        #ax6.imshow(test_shape_1, 'gray')
+        #ax6.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
+        #ax6.set_title(f'Subject {sub}: T1+T2 Proposed')
+        #ax6.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
 
         plt.show()
 
