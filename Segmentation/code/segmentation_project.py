@@ -52,11 +52,11 @@ def segmentation_demo():
             slice = j
             print(f"\t\tSlice {slice}...")
             # Load T1-only
-            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False)
+            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False, use_all_labels=True)
             all_data_t1.append(X_t1)
             
             # Load T2 + T1
-            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True)
+            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True, use_all_labels=True)
             all_data_t1t2.append(X_both)
             all_labels.append(Y.flatten())
 

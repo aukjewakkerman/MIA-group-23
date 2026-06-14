@@ -292,7 +292,7 @@ def segmentation_knn(train_data, train_labels, test_data, k=1):
     # predicted_labels - Predicted labels for the test slice
     
     # Subsample training data for efficiency
-    num_samples=10000
+    num_samples=200000
     ix = np.random.randint(train_data.shape[0], size=num_samples)
 
     subset_train_data = train_data[ix,:]

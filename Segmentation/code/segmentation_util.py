@@ -52,7 +52,7 @@ def scatter_data(X, Y, feature0=0, feature1=1, ax=None):
     return ax
 
 
-def create_dataset(image_number, slice_number, task, use_t2=True):
+def create_dataset(image_number, slice_number, task, use_t2=True, use_all_labels=False):
     # create_dataset Creates a dataset for a particular subject (image), slice and task
     # Input:
     # image_number - Number of the subject (scalar)
@@ -67,7 +67,7 @@ def create_dataset(image_number, slice_number, task, use_t2=True):
     X, feature_labels = extract_features(image_number, slice_number, use_t2)
 
     #Create labels
-    Y = create_labels(image_number, slice_number, task)
+    Y = create_labels(image_number, slice_number, task, use_all_labels)
 
     return X, Y, feature_labels
 
@@ -171,7 +171,7 @@ def extract_features(image_number, slice_number, use_t2=True):
     return X, list(features)
 
 
-def create_labels(image_number, slice_number, task):
+def create_labels(image_number, slice_number, task, use_all_labels):
     # Creates labels for a particular subject (image), slice and
     # task
     #
@@ -202,18 +202,55 @@ def create_labels(image_number, slice_number, task):
     if task == 'brain':
         Y = I>0
     elif task == 'tissue':
-        # sub-binarize
-        white_matter = np.isin(I, [2, 5])
-        gray_matter = np.isin(I, [3, 7])
-        csf = np.isin(I, [4, 8])
-        background = np.isin(I, [0, 1, 6])
+        
+        if not use_all_labels:
+            # sub-binarize
+            white_matter = np.isin(I, [2, 5])
+            gray_matter = np.isin(I, [3, 7])
+            csf = np.isin(I, [4, 8])
+            background = np.isin(I, [0, 1, 6])
 
-        # new GT
-        Y = np.copy(I)
-        Y[background] = 0
-        Y[white_matter] = 1
-        Y[gray_matter] = 2
-        Y[csf] = 3
+        elif use_all_labels:
+            # All_labels
+            background = np.isin(I, 0)
+            cerebellum = np.isin(I, 1)
+            white_matter_hyper_lesion = np.isin(I, 2)
+            basal_ganglia_thalami = np.isin(I, 3)
+            ventricles = np.isin(I, 4)
+            white_matter = np.isin(I, 5)
+            brainstem = np.isin(I, 6)
+            gray_matter = np.isin(I, 7)
+            csf = np.isin(I, 8)
+        
+        else:
+            print("Something is super wrong, but I don't know what ? 1.0")
+            
+
+        if not use_all_labels:
+            # new GT
+            Y = np.copy(I)
+            Y[background] = 0
+            Y[white_matter] = 1
+            Y[gray_matter] = 2
+            Y[csf] = 3
+
+        elif use_all_labels:
+            # new GT
+            Y = np.copy(I)
+            Y[background] = 0
+            Y[cerebellum] = 1
+            Y[white_matter_hyper_lesion] = 2
+            Y[basal_ganglia_thalami] = 3
+            Y[ventricles] = 4
+            Y[white_matter] = 5
+            Y[brainstem] = 6
+            Y[gray_matter] = 7
+            Y[csf] = 8
+
+        else:
+            print("Something is super wrong, but I don't know what ? 2.0")
+
+    
     else:
         print(task)
         raise ValueError("Variable 'task' must be one of two values: 'brain' or 'tissue'")
