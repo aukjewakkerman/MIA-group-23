@@ -68,11 +68,11 @@ def segmentation_demo():
     print(f"\tData shapes - T1: {all_data_t1_matrix.shape}, T1+T2: {all_data_t1t2_matrix.shape}, Labels: {all_labels_matrix.shape}")
     print('\nStarting cross-validation...')
 
-    all_slices = np.arange(num_subjects*len(train_slices))
+    all_subjects = np.arange(num_subjects)
+    all_indices = np.arange(num_subjects * len(train_slices))
 
-    # Leave-One-Subject-Out Cross-Validation
-    #for i in np.arange(num_subjects):
-    for i in all_slices:
+    # Leave-One-Slice-Out Cross-Validation
+    for i in all_subjects:
         sub = i + 1
 
         fig = plt.figure(figsize=(11, 13))
@@ -81,15 +81,15 @@ def segmentation_demo():
         for j in range(len(train_slices)):
             slice = j + 1   # For naming the right slice in plots
 
-            slice_index = len(train_slices)*i+j     # Current test slice (excluded from training data)
+            slice_index = len(train_slices) * i + j     # Current test slice (excluded from training data)
 
             # Define Training data (all slices except current slice (slice_index))
-            train_subjects = np.delete(all_slices, slice_index)     #Exclude current test slice
+            train_subjects = np.delete(all_indices, slice_index)     #Exclude current test slice
             train_data_t1 = all_data_t1_matrix[:, :, train_subjects]
             train_data_t1t2 = all_data_t1t2_matrix[:, :, train_subjects]
             train_labels = all_labels_matrix[:, train_subjects]
 
-            # Define Test data (Current slice_index)
+            # Define Test data (current slice_index)
             test_data_t1 = all_data_t1_matrix[:, :, slice_index]
             test_data_t1t2 = all_data_t1t2_matrix[:, :, slice_index]
             test_labels = all_labels_matrix[:, slice_index]
@@ -135,9 +135,10 @@ def segmentation_demo():
             ax3.imshow(test_labels.reshape(im_size[0], im_size[1]), 'viridis')
             ax3.set_title(f'Slice {slice}: Ground Truth')
 
-        # Show plot per Subject
+        # Save plot per Subject before displaying it
+        fig.tight_layout(rect=[0, 0, 1, 1])
+        fig.savefig(f"Test_{sub}.png", dpi=150, bbox_inches='tight')
         plt.show()
-        plt.savefig(f"Test {sub}", format='png')
 
 
 # def segmentation_demo():
