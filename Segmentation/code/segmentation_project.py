@@ -30,6 +30,116 @@ def segmentation_mymethod(train_data_matrix, train_labels_matrix, test_data, tas
 
     return predicted_labels
 
+
+def segmentation_demo():
+    num_subjects = 5
+    im_size = [240, 240]
+    train_slices = [1,2,3]
+    task = 'tissue'  
+
+    all_subjects = np.arange(num_subjects)
+    
+    all_data_t1 = []
+    all_data_t1t2 = []
+    all_labels = []
+
+    print(f'Loading data for {num_subjects} subjects with {len(train_slices)} slices...')
+    for i in all_subjects:
+        sub = i + 1
+        print(f"\tSubject {sub}...")
+
+        for j in train_slices:
+            slice = j
+            print(f"\t\tSlice {slice}...")
+            # Load T1-only
+            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False)
+            all_data_t1.append(X_t1)
+            
+            # Load T2 + T1
+            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True)
+            all_data_t1t2.append(X_both)
+            all_labels.append(Y.flatten())
+
+    all_data_t1_matrix = np.dstack(all_data_t1)
+    all_data_t1t2_matrix = np.dstack(all_data_t1t2)
+    all_labels_matrix = np.column_stack(all_labels)
+
+    print('Finished loading data.')
+    print(f"\tData shapes - T1: {all_data_t1_matrix.shape}, T1+T2: {all_data_t1t2_matrix.shape}, Labels: {all_labels_matrix.shape}")
+    print('\nStarting cross-validation...')
+
+    all_slices = np.arange(num_subjects*len(train_slices))
+
+    # Leave-One-Subject-Out Cross-Validation
+    #for i in np.arange(num_subjects):
+    for i in all_slices:
+        sub = i + 1
+
+        fig = plt.figure(figsize=(11, 13))
+        fig.suptitle(f"Subject {sub}")
+
+        for j in range(len(train_slices)):
+            slice = j + 1   # For naming the right slice in plots
+
+            slice_index = len(train_slices)*i+j     # Current test slice (excluded from training data)
+
+            # Define Training data (all slices except current slice (slice_index))
+            train_subjects = np.delete(all_slices, slice_index)     #Exclude current test slice
+            train_data_t1 = all_data_t1_matrix[:, :, train_subjects]
+            train_data_t1t2 = all_data_t1t2_matrix[:, :, train_subjects]
+            train_labels = all_labels_matrix[:, train_subjects]
+
+            # Define Test data (Current slice_index)
+            test_data_t1 = all_data_t1_matrix[:, :, slice_index]
+            test_data_t1t2 = all_data_t1t2_matrix[:, :, slice_index]
+            test_labels = all_labels_matrix[:, slice_index]
+
+            #----------------- T1 ----------------------------------------------
+            # Make prediction clusters with T1 MRI scan features only
+            print(f"Training Subject {sub} slice {slice} on T1-only...")
+            predicted_labels_t1 = segmentation_mymethod(train_data_t1, train_labels, test_data_t1, task)
+
+            # Validate prediction
+            err_t1 = util.classification_error(test_labels, predicted_labels_t1)
+            dice_t1 = util.dice_multiclass(test_labels, predicted_labels_t1)
+            conf_matrix_t1 = util.confusion_matrix(test_labels, predicted_labels_t1)
+            print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1}")
+
+            #----------------- T1 + T2 ------------------------------------------
+            # Make prediction clusters with both T1 and T2 MRI scan features
+            print(f"Training Subject {sub} slice {slice} on T1+T2...")
+            predicted_labels_t1t2 = segmentation_mymethod(train_data_t1t2, train_labels, test_data_t1t2, task)
+
+            # Validate prediction
+            err_t1t2 = util.classification_error(test_labels, predicted_labels_t1t2)
+            dice_t1t2 = util.dice_multiclass(test_labels, predicted_labels_t1t2)
+            conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
+            print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1t2}")
+
+            # -------------- Visualization --------------------------------
+            # Plot resulting predictions and validations per slice
+            # T1 features only
+            ax1 = fig.add_subplot(3,3,(1+3*j))
+            ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis')
+            ax1.set_title(f'Slice {slice}: T1-Only Baseline')
+            ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice {dice_t1:.4f}')
+
+            # T1 + T2 features
+            ax2 = fig.add_subplot(3,3,(2+3*j))
+            ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis')
+            ax2.set_title(f'Slice {slice}: T1+T2 Proposed')
+            ax2.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice {dice_t1t2:.4f}')
+
+            # Ground Truth
+            ax3 = fig.add_subplot(3,3,(3+3*j))
+            ax3.imshow(test_labels.reshape(im_size[0], im_size[1]), 'viridis')
+            ax3.set_title(f'Slice {slice}: Ground Truth')
+
+        # Show plot per Subject
+        plt.show()
+        plt.savefig(f"Test {sub}", format='png')
+
+
 # def segmentation_demo():
 
 #     train_subject = 1
@@ -120,147 +230,3 @@ def segmentation_mymethod(train_data_matrix, train_labels_matrix, test_data, tas
 #         text_str = 'Err {:.4f}, dice {:.4f}'.format(all_errors[i,1], all_dice[i,1])
 #         ax2.set_xlabel(text_str)
 #         ax2.set_title('Subject {}: My method'.format(sub))
-
-def segmentation_demo():
-    num_subjects = 5
-    im_size = [240, 240]
-    train_slices = [1,2,3]
-    task = 'tissue'  
-
-    all_subjects = np.arange(num_subjects)
-    
-    all_data_t1 = []
-    all_data_t1t2 = []
-    all_labels = []
-
-    print(f'Loading data for {num_subjects} subjects...')
-    for i in all_subjects:
-        sub = i + 1
-        print(f"\tSubject {sub}...")
-
-        for j in train_slices:
-            slice = j
-            print(f"\t\tSlice {slice}...")
-            # Load T1-only
-            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False)
-            all_data_t1.append(X_t1)
-            
-            # Load T2 + T1
-            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True)
-            all_data_t1t2.append(X_both)
-            all_labels.append(Y.flatten())
-
-    all_data_t1_matrix = np.dstack(all_data_t1)
-    all_data_t1t2_matrix = np.dstack(all_data_t1t2)
-    all_labels_matrix = np.column_stack(all_labels)
-
-    # Reshape data so patients and slices are sepperate
-    #all_data_t1_matrix = all_data_t1_matrix.reshape(57600, 9, num_subjects, len(train_slices))
-    #all_data_t1t2_matrix = all_data_t1t2_matrix.reshape(57600, 19, num_subjects, len(train_slices))
-    #all_labels_matrix = all_labels_matrix.reshape(57600, num_subjects, len(train_slices))
-
-    print('Finished loading data.')
-    print(f"\tData shapes - T1: {all_data_t1_matrix.shape}, T1+T2: {all_data_t1t2_matrix.shape}, Labels: {all_labels_matrix.shape}")
-    print('\nStarting cross-validation...')
-
-    all_slices = np.arange(15)
-
-    # Leave-One-Subject-Out Cross-Validation
-    #for i in np.arange(num_subjects):
-    for i in all_slices:
-        print(i)
-        sub = i + 1
-        
-        # Define training subjects (all except the current test subject 'i')
-        #train_subjects = np.delete(all_subjects, i)
-        train_subjects = np.delete(all_slices, i)
-
-        # --- T1 ---
-        train_data_t1 = all_data_t1_matrix[:, :, train_subjects]
-        print('shape train_data_t1', train_data_t1.shape)
-        test_data_t1 = all_data_t1_matrix[:, :, i]
-        print('shape test_data_t1t2', test_data_t1.shape)
-        test_labels = all_labels_matrix[:, i]
-        
-        print(f"Training Subject {sub} on T1-only...")
-        predicted_labels_t1 = segmentation_mymethod(train_data_t1, all_labels_matrix[:, train_subjects], test_data_t1, task)
-        err_t1 = util.classification_error(test_labels, predicted_labels_t1)
-        dice_t1 = util.dice_multiclass(test_labels, predicted_labels_t1)
-        conf_matrix_t1 = util.confusion_matrix(test_labels, predicted_labels_t1)
-        print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1}")
-
-        # --- T1 + T2 ---
-        train_data_t1t2 = all_data_t1t2_matrix[:, :, train_subjects]
-        test_data_t1t2 = all_data_t1t2_matrix[:, :, i]
-        
-        print(f"Training Subject {sub} on T1+T2...")
-        predicted_labels_t1t2 = segmentation_mymethod(train_data_t1t2, all_labels_matrix[:, train_subjects], test_data_t1t2, task)
-        err_t1t2 = util.classification_error(test_labels, predicted_labels_t1t2)
-        dice_t1t2 = util.dice_multiclass(test_labels, predicted_labels_t1t2)
-        conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
-        print(f"Confusion Matrix for T1+T2:\n{conf_matrix_t1t2}")
-
-        # --- Visualization ---
-        fig = plt.figure(figsize=(8, 15))
-        test_shape_1 = test_labels.reshape(im_size[0], im_size[1])
-        
-        # Plot Slice 1 results
-        # Plot T1 Results
-        ax1 = fig.add_subplot(121)
-        ax1.imshow(test_shape_1, 'gray')
-        ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        ax1.set_title(f'Subject {sub}: T1-Only Baseline')
-        ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
-
-        # Plot T1 + T2 Results
-        ax2 = fig.add_subplot(122)
-        ax2.imshow(test_shape_1, 'gray')
-        ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        ax2.set_title(f'Subject {sub}: T1+T2 Proposed')
-        ax2.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
-
-        # Plot Slice 2 results
-        # Plot T1 Results
-        #ax3 = fig.add_subplot(323)
-        #ax3.imshow(test_shape_1, 'gray')
-        #ax3.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        #ax3.set_title(f'Subject {sub}: T1-Only Baseline')
-        #ax3.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
-
-        # Plot T1 + T2 Results
-        #ax4 = fig.add_subplot(324)
-        #ax4.imshow(test_shape_1, 'gray')
-        #ax4.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        #ax4.set_title(f'Subject {sub}: T1+T2 Proposed')
-        #ax4.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
-        
-        # Plot Slice 3 results
-        # Plot T1 Results
-        #ax5 = fig.add_subplot(325)
-        #ax5.imshow(test_shape_1, 'gray')
-        #ax5.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        #ax5.set_title(f'Subject {sub}: T1-Only Baseline')
-        #ax5.set_xlabel(f'Err {err_t1:.4f}, Mean dice score {dice_t1:.4f}')
-
-        # Plot T1 + T2 Results
-        #ax6 = fig.add_subplot(326)
-        #ax6.imshow(test_shape_1, 'gray')
-        #ax6.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=0.5)
-        #ax6.set_title(f'Subject {sub}: T1+T2 Proposed')
-        #ax6.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice score {dice_t1t2:.4f}')
-
-        plt.show()
-
-
-        #Klooi plotjes:
-        fig2 = plt.figure(figsize=(8, 15))
-
-        ax1 = fig2.add_subplot(321)
-        ax1.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis', alpha=1)
-        ax1.set_title(f'Subject {sub}: T1+T2 Proposed (No Ground Truth)')
-
-        ax2 = fig2.add_subplot(322)
-        ax2.imshow(test_shape_1, 'viridis', alpha=1)
-        ax2.set_title(f'Subject {sub}: Ground Truth (No Prediction)')
-
-        plt.show()
