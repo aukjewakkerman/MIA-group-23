@@ -160,6 +160,6 @@ def segmentation_demo():
         fig.savefig(f"Test_{sub}.png", dpi=150, bbox_inches='tight')
         plt.show()
 
-    print("All dice scores:", dice_score_list)
+    print("All dice scores:\n\tT1-only\t\t\t\tT1+T2")
     for i in dice_score_list:
-        print(i[0], i[1])
+        print('\t', i[0], i[1])
