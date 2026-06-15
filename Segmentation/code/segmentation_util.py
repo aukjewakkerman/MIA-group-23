@@ -230,27 +230,6 @@ def create_labels(image_number, slice_number, task):
 
     return Y
 
-
-def dice_overlap(true_labels, predicted_labels, smooth=1.):
-    # returns the Dice coefficient for two binary label vectors
-    # Input:
-    # true_labels         Nx1 binary vector with the true labels
-    # predicted_labels    Nx1 binary vector with the predicted labels
-    # smooth              smoothing factor that prevents division by zero
-    # Output:
-    # dice          Dice coefficient
-
-    assert true_labels.shape[0] == predicted_labels.shape[0], "Number of labels do not match"
-
-    t = true_labels.flatten()
-    p = predicted_labels.flatten()
-
-    intersection = np.sum(t * p)
-    dice = (2. * intersection + smooth) / (np.sum(t) + np.sum(p) + smooth)
-    
-    return dice
-
-
 def dice_multiclass(true_labels, predicted_labels):
     #dice_multiclass.m returns the Dice coefficient for two label vectors with
     #multiple classses
@@ -285,27 +264,6 @@ def dice_multiclass(true_labels, predicted_labels):
     dice_score_mean = dice_score.mean()
 
     return dice_score_mean
-
-
-def classification_error(true_labels, predicted_labels):
-    # classification_error.m returns the classification error for two vectors
-    # with labels
-    #
-    # Input:
-    # true_labels         Nx1 vector with the true labels
-    # predicted_labels    Nx1 vector with the predicted labels
-    #
-    # Output:
-    # error         Classification error
-
-    assert true_labels.shape[0] == predicted_labels.shape[0], "Number of labels do not match"
-
-    t = true_labels.flatten()
-    p = predicted_labels.flatten()
-
-    err = np.mean(t != p)
-    
-    return err
 
 def confusion_matrix(true_labels, predicted_labels):
     import pandas as pd
