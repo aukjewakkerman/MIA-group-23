@@ -5,6 +5,7 @@ Utility functions for segmentation.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.patches as mpatches
 import segmentation as seg
 from scipy import ndimage
 
@@ -46,8 +47,11 @@ def scatter_data(X, Y, feature0=0, feature1=1, ax=None):
     colors = cm.rainbow(np.linspace(0, 1, len(class_labels)))
     for i, c in zip(np.arange(len(class_labels)), colors):
         idx2 = indices2 == class_labels[i]
-        lbl = 'X, class '+str(i)
+        lbl = 'Class '+str(class_labels[i])
         ax.scatter(X[idx2,feature0], X[idx2,feature1], color=c, label=lbl)
+
+    # Show legend mapping colors to classes
+    ax.legend(title='Classes', loc='best')
 
     return ax
 
@@ -226,7 +230,6 @@ def create_labels(image_number, slice_number, task):
 
     return Y
 
-
 def dice_overlap(true_labels, predicted_labels, smooth=1.):
     # returns the Dice coefficient for two binary label vectors
     # Input:
@@ -245,7 +248,6 @@ def dice_overlap(true_labels, predicted_labels, smooth=1.):
     dice = (2. * intersection + smooth) / (np.sum(t) + np.sum(p) + smooth)
     
     return dice
-
 
 def dice_multiclass(true_labels, predicted_labels):
     #dice_multiclass.m returns the Dice coefficient for two label vectors with
@@ -282,27 +284,6 @@ def dice_multiclass(true_labels, predicted_labels):
 
     return dice_score_mean
 
-
-def classification_error(true_labels, predicted_labels):
-    # classification_error.m returns the classification error for two vectors
-    # with labels
-    #
-    # Input:
-    # true_labels         Nx1 vector with the true labels
-    # predicted_labels    Nx1 vector with the predicted labels
-    #
-    # Output:
-    # error         Classification error
-
-    assert true_labels.shape[0] == predicted_labels.shape[0], "Number of labels do not match"
-
-    t = true_labels.flatten()
-    p = predicted_labels.flatten()
-
-    err = np.mean(t != p)
-    
-    return err
-
 def confusion_matrix(true_labels, predicted_labels):
     import pandas as pd
     # confusion_matrix.m returns the confusion matrix for two vectors with labels
@@ -326,6 +307,26 @@ def confusion_matrix(true_labels, predicted_labels):
     conf_matrix = pd.DataFrame(conf_matrix, index=[f"True {name}" for name in class_names], columns=[f"Pred {name}" for name in class_names])
 
     return conf_matrix
+
+
+def add_label_legend(ax, class_names=None, num_classes=None, cmap_name='tab10', loc='best'):
+    """Add a legend for integer label images (0..C-1) showing class colors.
+
+    - ax: matplotlib Axes where legend will be placed
+    - class_names: optional list of class display names (length C)
+    - num_classes: optional number of classes; inferred from class_names if not provided
+    - cmap_name: matplotlib colormap name to sample colors from
+    - loc: legend location
+    """
+    if class_names is None and num_classes is None:
+        return ax
+    if num_classes is None:
+        num_classes = len(class_names)
+    cmap = cm.get_cmap(cmap_name, num_classes)
+    colors = cmap(np.arange(num_classes))
+    handles = [mpatches.Patch(color=colors[i], label=(class_names[i] if class_names is not None else f'Class {i}')) for i in range(num_classes)]
+    ax.legend(handles=handles, loc=loc, title='Classes')
+    return ax
 
 
 
