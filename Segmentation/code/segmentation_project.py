@@ -5,6 +5,7 @@ Project code+scripts for 8BE030 course
 import numpy as np
 import segmentation_util as util
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import segmentation as seg
 
 
@@ -43,10 +44,6 @@ def segmentation_demo():
     all_data_t1t2 = []
     all_labels = []
 
-    average_confusion_matrix_t1 = np.zeros((4,4)) #because we have 4 classes (background, CSF, GM, WM)
-    average_confusion_matrix_t1t2 = np.zeros((4,4)) #because we have 4 classes (background, CSF, GM, WM)
-    count = 0
-
     print(f'Loading data for {num_subjects} subjects with {len(train_slices)} slices...')
     for i in all_subjects:
         sub = i + 1
@@ -75,6 +72,14 @@ def segmentation_demo():
     all_subjects = np.arange(num_subjects)
     all_indices = np.arange(num_subjects * len(train_slices))
 
+    # -----Create legend for all slices--------------------------
+    labels = ['background', 'White Matter', 'Grey Matter', 'CSF']
+    cmap = plt.cm.viridis
+    colors = cmap([0/3, 1/3, 2/3, 3/3])  # normalized positions in the colormap
+    patches = [mpatches.Patch(color=colors[i], label=labels[i])for i in range(len(labels))]
+
+    dice_score_list = []
+
     # Leave-One-Slice-Out Cross-Validation
     for i in all_subjects:
         sub = i + 1
@@ -83,7 +88,9 @@ def segmentation_demo():
         fig.suptitle(f"Subject {sub}")
 
         for j in range(len(train_slices)):
-            count += 1
+
+            dice_score_mini_list = []
+
             slice = j + 1   # For naming the right slice in plots
 
             slice_index = len(train_slices) * i + j     # Current test slice (excluded from training data)
@@ -105,9 +112,9 @@ def segmentation_demo():
             predicted_labels_t1 = segmentation_mymethod(train_data_t1, train_labels, test_data_t1, task)
 
             # Validate prediction
+            err_t1 = util.classification_error(test_labels, predicted_labels_t1)
             dice_t1 = util.dice_multiclass(test_labels, predicted_labels_t1)
             conf_matrix_t1 = util.confusion_matrix(test_labels, predicted_labels_t1)
-            average_confusion_matrix_t1 += conf_matrix_t1
             print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1}")
 
             #----------------- T1 + T2 ------------------------------------------
@@ -116,10 +123,13 @@ def segmentation_demo():
             predicted_labels_t1t2 = segmentation_mymethod(train_data_t1t2, train_labels, test_data_t1t2, task)
 
             # Validate prediction
+            err_t1t2 = util.classification_error(test_labels, predicted_labels_t1t2)
             dice_t1t2 = util.dice_multiclass(test_labels, predicted_labels_t1t2)
             conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
-            average_confusion_matrix_t1t2 += conf_matrix_t1t2
             print(f"Confusion Matrix for T1+T2:\n{conf_matrix_t1t2}")
+
+            dice_score_mini_list.append(float(dice_t1))
+            dice_score_mini_list.append(float(dice_t1t2))
 
             # -------------- Visualization --------------------------------
             # Plot resulting predictions and validations per slice
@@ -127,26 +137,29 @@ def segmentation_demo():
             ax1 = fig.add_subplot(3,3,(1+3*j))
             ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis')
             ax1.set_title(f'Slice {slice}: T1-Only Baseline')
-            ax1.set_xlabel(f'Mean dice {dice_t1:.4f}')
+            ax1.legend(handles=patches, loc='upper right', fontsize=8)
+            ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice {dice_t1:.4f}')
 
             # T1 + T2 features
             ax2 = fig.add_subplot(3,3,(2+3*j))
             ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis')
             ax2.set_title(f'Slice {slice}: T1+T2 Proposed')
-            ax2.set_xlabel(f'Mean dice {dice_t1t2:.4f}')
+            ax2.legend(handles=patches, loc='upper right', fontsize=8)
+            ax2.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice {dice_t1t2:.4f}')
 
             # Ground Truth
             ax3 = fig.add_subplot(3,3,(3+3*j))
             ax3.imshow(test_labels.reshape(im_size[0], im_size[1]), 'viridis')
+            ax3.legend(handles=patches, loc='upper right', fontsize=8)
             ax3.set_title(f'Slice {slice}: Ground Truth')
+
+            dice_score_list.append(dice_score_mini_list)
 
         # Save plot per Subject before displaying it
         fig.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig(f"Test_{sub}.png", dpi=150, bbox_inches='tight')
         plt.show()
 
-    average_confusion_matrix_t1 = np.round(average_confusion_matrix_t1 / count).astype(int) #average confusion matrix across all subjects and slices for T1-only
-    average_confusion_matrix_t1t2 = np.round(average_confusion_matrix_t1t2 / count).astype(int) #average confusion matrix across all subjects and slices for T1+T2
-
-    print(f"\nAverage Confusion Matrix with T1-only:\n{average_confusion_matrix_t1}")
-    print(f"Average Confusion Matrix with T1+T2:\n{average_confusion_matrix_t1t2}\n")
+    print("All dice scores:", dice_score_list)
+    for i in dice_score_list:
+        print(i[0], i[1])
