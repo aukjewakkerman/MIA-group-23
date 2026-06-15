@@ -265,6 +265,8 @@ def dice_multiclass(true_labels, predicted_labels):
     dice_score = np.empty((len(all_classes), 1))
     dice_score[:] = np.nan
 
+    class_names = ['Background', 'WM', 'GM', 'CSF']
+
     #Consider each class as the foreground class
     for i in np.arange(len(all_classes)):
         idx2 = indices2 == all_classes[i]
@@ -278,7 +280,7 @@ def dice_multiclass(true_labels, predicted_labels):
         temp_predicted[predicted_labels == all_classes[i]] = 1
         temp_predicted[predicted_labels != all_classes[i]] = 0
         dice_score[i] = dice_overlap(temp_true.astype(int), temp_predicted.astype(int))
-        print("Dice score for class [{}]: {}".format(i, dice_score[i]))
+        print(f"Dice score for {class_names[i]}: {dice_score[i]}")
 
     dice_score_mean = dice_score.mean()
 
@@ -298,7 +300,7 @@ def confusion_matrix(true_labels, predicted_labels):
     t = true_labels.flatten()
     p = predicted_labels.flatten()
     all_classes, indices1, indices2 = np.unique(true_labels, return_index=True, return_inverse=True)
-    class_names = ['Background', 'CSF', 'GM', 'WM'] #still needs to be generalized for more classes
+    class_names = ['Background', 'WM', 'GM', 'CSF']
     conf_matrix = np.zeros((len(all_classes), len(all_classes)), dtype=int)
     for i in range(len(t)):
         true_class = t[i]
