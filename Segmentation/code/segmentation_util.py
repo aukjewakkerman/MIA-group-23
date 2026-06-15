@@ -5,6 +5,7 @@ Utility functions for segmentation.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.patches as mpatches
 import segmentation as seg
 from scipy import ndimage
 
@@ -46,8 +47,11 @@ def scatter_data(X, Y, feature0=0, feature1=1, ax=None):
     colors = cm.rainbow(np.linspace(0, 1, len(class_labels)))
     for i, c in zip(np.arange(len(class_labels)), colors):
         idx2 = indices2 == class_labels[i]
-        lbl = 'X, class '+str(i)
+        lbl = 'Class '+str(class_labels[i])
         ax.scatter(X[idx2,feature0], X[idx2,feature1], color=c, label=lbl)
+
+    # Show legend mapping colors to classes
+    ax.legend(title='Classes', loc='best')
 
     return ax
 
@@ -326,6 +330,26 @@ def confusion_matrix(true_labels, predicted_labels):
     conf_matrix = pd.DataFrame(conf_matrix, index=[f"True {name}" for name in class_names], columns=[f"Pred {name}" for name in class_names])
 
     return conf_matrix
+
+
+def add_label_legend(ax, class_names=None, num_classes=None, cmap_name='tab10', loc='best'):
+    """Add a legend for integer label images (0..C-1) showing class colors.
+
+    - ax: matplotlib Axes where legend will be placed
+    - class_names: optional list of class display names (length C)
+    - num_classes: optional number of classes; inferred from class_names if not provided
+    - cmap_name: matplotlib colormap name to sample colors from
+    - loc: legend location
+    """
+    if class_names is None and num_classes is None:
+        return ax
+    if num_classes is None:
+        num_classes = len(class_names)
+    cmap = cm.get_cmap(cmap_name, num_classes)
+    colors = cmap(np.arange(num_classes))
+    handles = [mpatches.Patch(color=colors[i], label=(class_names[i] if class_names is not None else f'Class {i}')) for i in range(num_classes)]
+    ax.legend(handles=handles, loc=loc, title='Classes')
+    return ax
 
 
 

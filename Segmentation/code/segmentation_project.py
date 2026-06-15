@@ -5,6 +5,7 @@ Project code+scripts for 8BE030 course
 import numpy as np
 import segmentation_util as util
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import segmentation as seg
 
 
@@ -71,6 +72,12 @@ def segmentation_demo():
     all_subjects = np.arange(num_subjects)
     all_indices = np.arange(num_subjects * len(train_slices))
 
+    # -----Create legend for all slices--------------------------
+    labels = ['background', 'White Matter', 'Grey Matter', 'CSF']
+    cmap = plt.cm.viridis
+    colors = cmap([0/3, 1/3, 2/3, 3/3])  # normalized positions in the colormap
+    patches = [mpatches.Patch(color=colors[i], label=labels[i])for i in range(len(labels))]
+
     dice_score_list = []
 
     # Leave-One-Slice-Out Cross-Validation
@@ -79,7 +86,6 @@ def segmentation_demo():
 
         fig = plt.figure(figsize=(11, 13))
         fig.suptitle(f"Subject {sub}")
-        classes = ['background', 'White Matter', 'Grey Matter', 'CSF']
 
         for j in range(len(train_slices)):
 
@@ -131,17 +137,20 @@ def segmentation_demo():
             ax1 = fig.add_subplot(3,3,(1+3*j))
             ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis')
             ax1.set_title(f'Slice {slice}: T1-Only Baseline')
+            ax1.legend(handles=patches, loc='upper right', fontsize=8)
             ax1.set_xlabel(f'Err {err_t1:.4f}, Mean dice {dice_t1:.4f}')
 
             # T1 + T2 features
             ax2 = fig.add_subplot(3,3,(2+3*j))
             ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis')
             ax2.set_title(f'Slice {slice}: T1+T2 Proposed')
+            ax2.legend(handles=patches, loc='upper right', fontsize=8)
             ax2.set_xlabel(f'Err {err_t1t2:.4f}, Mean dice {dice_t1t2:.4f}')
 
             # Ground Truth
             ax3 = fig.add_subplot(3,3,(3+3*j))
             ax3.imshow(test_labels.reshape(im_size[0], im_size[1]), 'viridis')
+            ax3.legend(handles=patches, loc='upper right', fontsize=8)
             ax3.set_title(f'Slice {slice}: Ground Truth')
 
             dice_score_list.append(dice_score_mini_list)
@@ -149,7 +158,6 @@ def segmentation_demo():
         # Save plot per Subject before displaying it
         fig.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig(f"Test_{sub}.png", dpi=150, bbox_inches='tight')
-        fig.legend(classes)
         plt.show()
 
     print("All dice scores:", dice_score_list)
