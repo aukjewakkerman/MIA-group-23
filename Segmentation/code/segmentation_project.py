@@ -52,11 +52,11 @@ def segmentation_demo():
             slice = j
             print(f"\t\tSlice {slice}...")
             # Load T1-only
-            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False, use_all_labels=True)
+            X_t1, Y, _ = util.create_dataset(sub, slice, task, use_t2=False)
             all_data_t1.append(X_t1)
             
             # Load T2 + T1
-            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True, use_all_labels=True)
+            X_both, _, _ = util.create_dataset(sub, slice, task, use_t2=True)
             all_data_t1t2.append(X_both)
             all_labels.append(Y.flatten())
 
@@ -71,14 +71,20 @@ def segmentation_demo():
     all_subjects = np.arange(num_subjects)
     all_indices = np.arange(num_subjects * len(train_slices))
 
+    dice_score_list = []
+
     # Leave-One-Slice-Out Cross-Validation
     for i in all_subjects:
         sub = i + 1
 
         fig = plt.figure(figsize=(11, 13))
         fig.suptitle(f"Subject {sub}")
+        classes = ['background', 'White Matter', 'Grey Matter', 'CSF']
 
         for j in range(len(train_slices)):
+
+            dice_score_mini_list = []
+
             slice = j + 1   # For naming the right slice in plots
 
             slice_index = len(train_slices) * i + j     # Current test slice (excluded from training data)
@@ -116,6 +122,9 @@ def segmentation_demo():
             conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
             print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1t2}")
 
+            dice_score_mini_list.append(float(dice_t1))
+            dice_score_mini_list.append(float(dice_t1t2))
+
             # -------------- Visualization --------------------------------
             # Plot resulting predictions and validations per slice
             # T1 features only
@@ -135,10 +144,17 @@ def segmentation_demo():
             ax3.imshow(test_labels.reshape(im_size[0], im_size[1]), 'viridis')
             ax3.set_title(f'Slice {slice}: Ground Truth')
 
+            dice_score_list.append(dice_score_mini_list)
+
         # Save plot per Subject before displaying it
         fig.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig(f"Test_{sub}.png", dpi=150, bbox_inches='tight')
+        fig.legend(classes)
         plt.show()
+
+    print("All dice scores:", dice_score_list)
+    for i in dice_score_list:
+        print(i[0], i[1])
 
 
 # def segmentation_demo():
