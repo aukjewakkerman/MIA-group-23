@@ -117,7 +117,7 @@ def segmentation_demo():
             dice_t1 = util.dice_multiclass(test_labels, predicted_labels_t1)
             conf_matrix_t1 = util.confusion_matrix(test_labels, predicted_labels_t1)
             average_confusion_matrix_t1 += conf_matrix_t1
-            print(f"Confusion Matrix for T1-only:\n{conf_matrix_t1}")
+            print(f"Confusion Matrix for subject {sub} slice {slice} (T1-only):\n{conf_matrix_t1}")
 
             #----------------- T1 + T2 ------------------------------------------
             # Make prediction clusters with both T1 and T2 MRI scan features
@@ -128,7 +128,7 @@ def segmentation_demo():
             dice_t1t2 = util.dice_multiclass(test_labels, predicted_labels_t1t2)
             conf_matrix_t1t2 = util.confusion_matrix(test_labels, predicted_labels_t1t2)
             average_confusion_matrix_t1t2 += conf_matrix_t1t2
-            print(f"Confusion Matrix for T1+T2:\n{conf_matrix_t1t2}")
+            print(f"Confusion Matrix for subject {sub} slice {slice} (T1+T2):\n{conf_matrix_t1t2}")
 
             # -------------- Visualization --------------------------------
             # Plot resulting predictions and validations per slice
@@ -137,14 +137,14 @@ def segmentation_demo():
             ax1.imshow(predicted_labels_t1.reshape(im_size[0], im_size[1]), 'viridis')
             ax1.set_title(f'Slice {slice}: T1-Only Baseline')
             ax1.legend(handles=patches, loc='upper right', fontsize=8)
-            ax1.set_xlabel(f'Mean dice {dice_t1:.4f}')
+            ax1.set_xlabel(f'Mean dice score {dice_t1:.4f}')
 
             # T1 + T2 features
             ax2 = fig.add_subplot(3,3,(2+3*j))
             ax2.imshow(predicted_labels_t1t2.reshape(im_size[0], im_size[1]), 'viridis')
             ax2.set_title(f'Slice {slice}: T1+T2 Proposed')
             ax2.legend(handles=patches, loc='upper right', fontsize=8)
-            ax2.set_xlabel(f'Mean dice {dice_t1t2:.4f}')
+            ax2.set_xlabel(f'Mean dice score {dice_t1t2:.4f}')
 
             # Ground Truth
             ax3 = fig.add_subplot(3,3,(3+3*j))
