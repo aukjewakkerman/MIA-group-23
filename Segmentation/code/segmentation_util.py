@@ -32,7 +32,7 @@ def scatter_data(X, Y, feature0=0, feature1=1, ax=None):
     # scater_data displays a scatterplot of at most 1000 samples from dataset X, and gives each point
     # a different color based on its label in Y
 
-    k = 1000
+    k = 10
     if len(X) > k:
         idx = np.random.randint(len(X), size=k)
         X = X[idx,:]
@@ -282,9 +282,7 @@ def dice_multiclass(true_labels, predicted_labels):
         dice_score[i] = dice_overlap(temp_true.astype(int), temp_predicted.astype(int))
         print(f"Dice score for {class_names[i]}: {dice_score[i]}")
 
-    dice_score_mean = dice_score.mean()
-
-    return dice_score_mean
+    return dice_score.flatten() #flatten to return a dice score for each class
 
 def confusion_matrix(true_labels, predicted_labels):
     import pandas as pd
