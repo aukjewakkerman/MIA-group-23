@@ -7,6 +7,7 @@ import segmentation_util as util
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import segmentation as seg
+import pandas as pd
 
 
 def segmentation_mymethod(train_data_matrix, train_labels_matrix, test_data, task='tissue'):
@@ -170,5 +171,16 @@ def segmentation_demo():
 
     average_dice_t1 = dice_sum_t1 / count
     average_dice_t1t2 = dice_sum_t1t2 / count
-    print(f"Average Dice score with T1-only: {average_dice_t1}")
-    print(f"Average Dice score with T1+T2: {average_dice_t1t2}\n")
+    difference_dice = average_dice_t1t2 - average_dice_t1
+
+    dice_table = pd.DataFrame({
+        'Class': labels,
+        'T1-only dice score': average_dice_t1,
+        'T1+T2 dice score': average_dice_t1t2,
+        'Difference': difference_dice
+    })
+
+    dice_table = dice_table.set_index('Class')
+
+    print("\nAverage dice scores accross all subjects and slices:\n")
+    print(dice_table)

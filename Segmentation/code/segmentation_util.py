@@ -32,7 +32,7 @@ def scatter_data(X, Y, feature0=0, feature1=1, ax=None):
     # scater_data displays a scatterplot of at most 1000 samples from dataset X, and gives each point
     # a different color based on its label in Y
 
-    k = 10
+    k = 1000
     if len(X) > k:
         idx = np.random.randint(len(X), size=k)
         X = X[idx,:]
