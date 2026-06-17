@@ -161,7 +161,7 @@ def segmentation_demo():
 
         # Save plot per Subject before displaying it
         fig.tight_layout(rect=[0, 0, 1, 1])
-        fig.savefig(f"Test_{sub}.png", dpi=150, bbox_inches='tight')
+        fig.savefig(f"Predicted_segmentation_T1_T1T2_{sub}.png", dpi=150, bbox_inches='tight')
         plt.show()
 
     average_confusion_matrix_t1 = np.round(sum_confusion_matrix_t1 / count).astype(int) #average confusion matrix across all subjects and slices for T1-only
