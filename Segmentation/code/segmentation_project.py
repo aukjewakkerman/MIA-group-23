@@ -34,6 +34,41 @@ def segmentation_mymethod(train_data_matrix, train_labels_matrix, test_data, tas
 
 
 def segmentation_demo():
+    """"
+    Run a full segmentation experiment with leave-one-slice-out cross-validation
+    on multiple subjects and slices, comparing T1-only features versus combined
+    T1+T2 features.
+
+    This function:
+    - Loads MRI data, T1 and optionally T2, for a predefined number of subjects
+      and slices.
+    - Constructs feature matrices and label vectors using `util.create_dataset`.
+    - Performs leave-one-slice-out cross-validation:
+        • For each slice, it is used as test data.
+        • All remaining slices are used for training.
+    - Applies the segmentation method (`segmentation_mymethod`) to:
+        • T1-only features
+        • Combined T1+T2 features
+    - Evaluates segmentation performance using:
+        • Dice scores (per class and averaged) for both T1-only and T1+T2
+        • Confusion matrices for both T1-only and T1+T2
+    - Visualizes predicted segmentations and ground truth per slice.
+    - Aggregates and prints average dice scores per class and the average confusion matrix across all subjects for both T1-only and T1+T2.
+
+    Outputs:
+    - Displays segmentation results per subject and slice using matplotlib.
+    - Saves visualization figures as PNG files.
+    - Prints:
+        • Confusion matrices (per slice and averaged) for both T1-only and T1+T2
+        • Dice scores per class and averaged for both T1-only and T1+T2
+
+    Notes:
+    - Assumes 4 segmentation classes: background, white matter (WM),
+      grey matter (GM), and cerebrospinal fluid (CSF).
+    - Image size is assumed to be 240x240 pixels.
+    - Relies on external utility functions for feature extraction, segmentation method, validation and visualization
+    """
+
     num_subjects = 5
     im_size = [240, 240]
     train_slices = [1,2,3]

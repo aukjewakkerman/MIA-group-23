@@ -79,6 +79,52 @@ def create_dataset(image_number, slice_number, task, use_t2=True):
     return X, Y, feature_labels
 
 def extract_features(image_number, slice_number, use_t2=True):
+    """
+    Extract pixel-wise features from MRI slices for segmentation tasks.
+
+    Features are computed from T1-weighted images and optionally T2-weighted
+    images, including intensity-based, spatial, and texture-related features.
+
+    Parameters:
+    image_number : int
+        Identifier of the subject (image index).
+    slice_number : int
+        Slice index within the subject volume.
+    use_t2 : bool, optional (default=True)
+        If True, include features derived from the T2-weighted image and
+        cross-modal features. If False, only T1-based features are used.
+
+    Returns:
+    X : ndarray of shape (N, k)
+        Feature matrix where:
+        - N = number of pixels in the image (flattened)
+        - k = number of extracted features
+    feature_labels : list of str
+        Names/descriptions of all extracted features, in the same order
+        as the columns of X.
+
+    Extracted Features:
+    T1 features:
+    - Raw intensity
+    - Gaussian-blurred intensity (sigma = 1, 2, 4)
+    - Local mean (3x3 window)
+    - Local standard deviation (3x3 window)
+    - Gradient magnitude
+    - Laplacian of Gaussian (LoG, sigma = 2)
+    - Difference of Gaussians (DoG, sigma = 1 and 4)
+
+    T2 features (if use_t2=True):
+    - Same set as T1 (raw, Gaussian, mean, std, gradient, LoG, DoG)
+
+    Cross-modal feature:
+    - Ratio of T2 to T1 intensity (T2 / (T1 + ε))
+
+    Notes:
+    - Images are loaded from '../data/dataset_brains/'
+    - All features are computed per pixel and flattened into vectors.
+    - A small constant (1e-5) is added when computing T2/T1 ratio to avoid division by zero.
+    """
+
     base_dir = '../data/dataset_brains/'
 
     # Load T1
@@ -170,7 +216,7 @@ def extract_features(image_number, slice_number, use_t2=True):
         features += ('T2 DoG (1, 4)',)
 
         # T2/T1 intensity ratio (The cross-modal feature)
-        ratio = (t2 / (t1 + 1e-5)).flatten().reshape(-1, 1)
+        ratio = (t2 / (t1 + 1e-5)).flatten().reshape(-1, 1) #1e-5 is added to avoid division by zero
         feats.append(ratio)
         features += ('T2/T1 ratio',)
 
