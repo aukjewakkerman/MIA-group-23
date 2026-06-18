@@ -20,13 +20,16 @@ def ngradient(fun, x, h=1e-3):
     # g - vector of partial derivatives (gradient) of fun
 
     #------------------------------------------------------------------#
-    # TODO: Implement the  computation of the partial derivatives of
-    # the function at x with numerical differentiation.
-    # g[k] should store the partial derivative w.r.t. the k-th parameter
-    pass
+    # Compute partial derivatives using central finite differences:
+    # g[k] = (fun(x + h*e_k) - fun(x - h*e_k)) / (2*h)
+    g = np.zeros_like(x, dtype=float)
+    for k in range(len(x)):
+        x_plus  = x.copy(); x_plus[k]  += h
+        x_minus = x.copy(); x_minus[k] -= h
+        g[k] = (fun(x_plus) - fun(x_minus)) / (2 * h)
     #------------------------------------------------------------------#
 
-    # return g
+    return g
 
 def scatter_data(X, Y, feature0=0, feature1=1, ax=None):
     # scater_data displays a scatterplot of at most 1000 samples from dataset X, and gives each point

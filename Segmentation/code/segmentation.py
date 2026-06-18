@@ -3,6 +3,7 @@ Segmentation module main code.
 """
 
 import numpy as np
+import segmentation_util as util
 import scipy
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -63,9 +64,8 @@ def extract_coordinate_feature(im):
     y_coord = np.tile(ar, (1, n_cols))
     
     #------------------------------------------------------------------#
-    # TODO: Use the above variables to create an image coord_im
-    # that combines the information from x_coord and y_coord 
-
+    # Compute Euclidean distance of each pixel from the image center
+    coord_im = np.sqrt((x_coord - x_center)**2 + (y_coord - y_center)**2)
     #------------------------------------------------------------------#
     
     # Create a feature from the coordinate image
@@ -121,10 +121,19 @@ def cost_kmeans(X, w_vector):
     W = w_vector.reshape(K, m)
 
     #------------------------------------------------------------------#
-    # TODO: Find distance of each point to each cluster center
-    # Then find the minimum distances min_dist and indices min_index
-    # Then calculate the cost
+    # Find distance of each point to each cluster center
+    # D: n x K matrix of squared distances
+    D = np.zeros((n, K))
+    for k in range(K):
+        diff = X - W[k, :]
+        D[:, k] = np.sum(diff**2, axis=1)
 
+    # Minimum distance to nearest cluster center
+    min_dist = np.min(D, axis=1)
+    min_index = np.argmin(D, axis=1)
+
+    # Cost = sum of minimum squared distances
+    J = np.sum(min_dist)
     #------------------------------------------------------------------#
 
     return J
@@ -150,8 +159,10 @@ def kmeans_clustering(test_data, K=2):
     num_iter = 100
 
     #------------------------------------------------------------------#
-    # TODO: Initialize cluster centers and store them in w_initial
-
+    # Initialize cluster centers by sampling K random points from test_data
+    n, M = test_data.shape
+    random_idx = np.random.choice(n, K, replace=False)
+    w_initial = test_data[random_idx, :]
     #------------------------------------------------------------------#
 
     #Reshape centers to a vector (needed by ngradient)
@@ -159,15 +170,19 @@ def kmeans_clustering(test_data, K=2):
 
     for i in np.arange(num_iter):
         # gradient ascent
-        w_vector = w_vector - mu*reg.ngradient(fun,w_vector)
+        w_vector = w_vector - mu*util.ngradient(fun, w_vector)
 
     #Reshape back to dataset
     w_final = w_vector.reshape(K, M)
 
     #------------------------------------------------------------------#
-    # TODO: Find distance of each point to each cluster center
-    # Then find the minimum distances min_dist and indices min_index
-
+    # Find distance of each point to each cluster center
+    D = np.zeros((n, K))
+    for k in range(K):
+        diff = test_data - w_final[k, :]
+        D[:, k] = np.sum(diff**2, axis=1)
+    min_dist = np.min(D, axis=1)
+    min_index = np.argmin(D, axis=1).reshape(-1, 1)
     #------------------------------------------------------------------#
 
     # Sort by intensity of cluster center
@@ -175,7 +190,7 @@ def kmeans_clustering(test_data, K=2):
 
     # Update the cluster indices based on the sorted order and return
     # results in predicted_labels
-    predicted_labels = np.empty(*min_index.shape)
+    predicted_labels = np.empty(min_index.shape)
     predicted_labels[:] = np.nan
 
     for i in np.arange(len(sorted_order)):
@@ -196,8 +211,10 @@ def nn_classifier(train_data, train_labels, test_data):
     #                    the test data
 
     #------------------------------------------------------------------#
-    # TODO: Implement missing functionality
-
+    # Use k-NN with k=1 (nearest neighbour classifier)
+    neigh = KNeighborsClassifier(n_neighbors=1)
+    neigh.fit(train_data, train_labels)
+    predicted_labels = neigh.predict(test_data)
     #------------------------------------------------------------------#
     return predicted_labels
 
@@ -240,9 +257,19 @@ def mypca(X):
     X = X - np.mean(X, axis=0)
 
     #------------------------------------------------------------------#
-    #TODO: Calculate covariance matrix of X, find eigenvalues and eigenvectors,
-    # sort them, and rotate X using the eigenvectors
+    # Covariance matrix of zero-mean X
+    cov = np.cov(X, rowvar=False)
 
+    # Eigenvalues (w) and eigenvectors (v); each column of v is an eigenvector
+    w, v = np.linalg.eigh(cov)
+
+    # Sort by descending eigenvalue
+    sort_idx = np.argsort(w)[::-1]
+    w = w[sort_idx]
+    v = v[:, sort_idx]
+
+    # Rotate X into the eigenvector basis
+    X_pca = X.dot(v)
     #------------------------------------------------------------------#
 
     #Return fraction of variance
